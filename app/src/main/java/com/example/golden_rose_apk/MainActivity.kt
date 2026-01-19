@@ -206,15 +206,13 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable(
-                        route = "receipt/{total}",
+                        route = "receipt/{receiptId}",
                     ) { backStackEntry ->
-                        val total = backStackEntry.arguments
-                            ?.getString("total")
-                            ?.toDoubleOrNull() ?: 0.0
+                        val receiptId = backStackEntry.arguments?.getString("receiptId") ?: ""
 
                         ReceiptScreen(
                             navController = navController,
-                            totalAmount = total,
+                            receiptId = receiptId,
                             cartViewModel = cartViewModel
                         )
                     }

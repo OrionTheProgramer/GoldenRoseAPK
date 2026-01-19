@@ -72,7 +72,7 @@ fun MyOrdersScreen(
                     items(orders) { order ->
                         OrderRow(order = order) {
                             // Ver boleta de esta orden
-                            navController.navigate("receipt/${order.total}")
+                            navController.navigate("receipt/${order.id}")
                         }
                     }
                 }

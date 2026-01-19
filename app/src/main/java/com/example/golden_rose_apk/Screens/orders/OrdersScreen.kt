@@ -65,7 +65,7 @@ fun OrdersScreen(
                 items(orders) { order ->
                     OrderItemCard(order = order) {
                         // Al hacer click en "Ver boleta"
-                        navController.navigate("receipt/${order.total}")
+                        navController.navigate("receipt/${order.id}")
                     }
                 }
             }

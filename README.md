@@ -6,6 +6,7 @@ Aplicación móvil teórica para la compra de skins de Valorant. El proyecto aho
 - **Catálogo de productos**: se carga desde `app/src/main/assets/products.json` y se renderiza usando imágenes locales (`android.resource://`).
 - **Usuarios**: se guardan en SQLite (Room) para simular registro e inicio de sesión sin depender de servicios externos.
 - **Órdenes**: se guardan en archivos JSON dentro del almacenamiento interno de la app para simular compras (pendiente migración a SQLite).
+- **Boletas**: se guardan en SQLite (Room) para mantener el historial de comprobantes de compra.
 
 ## Configuración Valorant API (imágenes/video)
 Para asociar imágenes de armas desde Valorant API, se incorporó un helper en `app/src/main/java/com/example/golden_rose_apk/config/ValorantApi.kt` con URLs base y utilidades para construir enlaces a imágenes y videos.
