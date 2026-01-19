@@ -195,7 +195,8 @@ fun ReceiptScreen(
 
                 Button(
                     onClick = {
-                        if (cartItems.isEmpty()) {
+                        val hasItems = receiptItems.isNotEmpty() || cartItems.isNotEmpty()
+                        if (!hasItems) {
                             Toast.makeText(
                                 context,
                                 "No hay productos en el carrito para generar la boleta",
