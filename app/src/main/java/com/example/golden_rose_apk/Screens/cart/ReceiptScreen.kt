@@ -25,6 +25,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -45,8 +46,14 @@ import android.os.Environment
 import android.util.Log
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.core.content.FileProvider
 import com.example.golden_rose_apk.ViewModel.CartItem
+import com.example.golden_rose_apk.data.ReceiptEntity
+import com.example.golden_rose_apk.data.ReceiptItem
+import com.example.golden_rose_apk.repository.LocalReceiptRepository
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -58,11 +65,19 @@ import java.util.Locale
 @Composable
 fun ReceiptScreen(
     navController: NavController,
-    totalAmount: Double = 0.0,         // solo para mostrar; para el PDF recalculamos
+    receiptId: String,
     cartViewModel: CartViewModel
 ) {
     val context = LocalContext.current
     val cartItems by cartViewModel.cartItems.collectAsState()
+    val receiptRepository = remember { LocalReceiptRepository(context) }
+    var receipt by remember { mutableStateOf<ReceiptEntity?>(null) }
+    var receiptItems by remember { mutableStateOf<List<ReceiptItem>>(emptyList()) }
+
+    LaunchedEffect(receiptId) {
+        receipt = receiptRepository.getReceipt(receiptId)
+        receiptItems = receipt?.let { receiptRepository.decodeItems(it.itemsJson) } ?: emptyList()
+    }
 
     // 👇 para comprobar en el log si llega vacío o no
     Log.d("ReceiptScreen", "cartItems size = ${cartItems.size}")
@@ -128,19 +143,46 @@ fun ReceiptScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Detalle de productos del carrito en la pantalla
-                    cartItems.forEach { item ->
-                        ReceiptDetailRow(
-                            label = "${item.product.name} x${item.quantity}",
-                            value = "$${((item.product.price ?: 0.0) * item.quantity).formatPrice()}"
+                    if (receipt == null && cartItems.isEmpty()) {
+                        Text(
+                            text = "No se encontró una boleta guardada.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error
                         )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+
+                    // Detalle de productos del carrito en la pantalla
+                    if (receiptItems.isNotEmpty()) {
+                        receiptItems.forEach { item ->
+                            ReceiptDetailRow(
+                                label = "${item.name} x${item.quantity}",
+                                value = "$${(item.unitPrice * item.quantity).formatPrice()}"
+                            )
+                        }
+                    } else {
+                        cartItems.forEach { item ->
+                            ReceiptDetailRow(
+                                label = "${item.product.name} x${item.quantity}",
+                                value = "$${((item.product.price ?: 0.0) * item.quantity).formatPrice()}"
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Este total puede venir del nav, no afecta al PDF
-                    ReceiptDetailRow("Monto Total:", "$${totalAmount.formatPrice()}")
-                    ReceiptDetailRow("Método de Pago:", "Simulado")
+                    ReceiptDetailRow(
+                        "Monto Total:",
+                        "$${(receipt?.total ?: 0.0).formatPrice()}"
+                    )
+                    ReceiptDetailRow(
+                        "Comprador:",
+                        receipt?.buyerName ?: "Invitado"
+                    )
+                    ReceiptDetailRow(
+                        "Método de Pago:",
+                        receipt?.paymentMethod ?: "Simulado"
+                    )
                 }
             }
 
@@ -153,7 +195,8 @@ fun ReceiptScreen(
 
                 Button(
                     onClick = {
-                        if (cartItems.isEmpty()) {
+                        val hasItems = receiptItems.isNotEmpty() || cartItems.isNotEmpty()
+                        if (!hasItems) {
                             Toast.makeText(
                                 context,
                                 "No hay productos en el carrito para generar la boleta",
@@ -163,18 +206,30 @@ fun ReceiptScreen(
                         }
 
                         try {
-                            // Recalcular totales basados en el carrito ACTUAL
-                            val subtotal = cartItems.sumOf { cartItem ->
-                                (cartItem.product.price ?: 0.0) * cartItem.quantity
+                            val subtotal = receipt?.subtotal ?: 0.0
+                            val commission = receipt?.commission ?: 0.0
+                            val shipping = receipt?.shipping ?: 0.0
+                            val total = receipt?.total ?: 0.0
+
+                            val pdfItems = if (receiptItems.isNotEmpty()) {
+                                receiptItems
+                            } else {
+                                cartItems.map {
+                                    ReceiptItem(
+                                        name = it.product.name,
+                                        quantity = it.quantity,
+                                        unitPrice = it.product.price
+                                    )
+                                }
                             }
-                            val commission = if (subtotal > 0) subtotal * 0.05 else 0.0
-                            val shipping = if (subtotal > 0) 5.0 else 0.0
-                            val total = subtotal + commission + shipping
 
                             val uri = generateReceiptPdf(
                                 context = context,
-                                orderId = null,
-                                items = cartItems,
+                                orderId = receiptId,
+                                buyerName = receipt?.buyerName ?: "Invitado",
+                                buyerEmail = receipt?.buyerEmail ?: "",
+                                paymentMethod = receipt?.paymentMethod ?: "Simulado",
+                                items = pdfItems,
                                 subtotal = subtotal,
                                 shipping = shipping,
                                 commission = commission,
@@ -237,7 +292,10 @@ fun ReceiptDetailRow(label: String, value: String) {
 fun generateReceiptPdf(
     context: Context,
     orderId: String? = null,
-    items: List<CartItem>,
+    buyerName: String,
+    buyerEmail: String,
+    paymentMethod: String,
+    items: List<ReceiptItem>,
     subtotal: Double,
     shipping: Double,
     commission: Double,
@@ -272,6 +330,14 @@ fun generateReceiptPdf(
     }
 
     y += 25f
+    canvas.drawText("Comprador: $buyerName", marginStart, y, paint)
+    if (buyerEmail.isNotBlank()) {
+        canvas.drawText("Email: $buyerEmail", marginEnd - 180f, y, paint)
+    }
+
+    y += 20f
+    canvas.drawText("Método de pago: $paymentMethod", marginStart, y, paint)
+    y += 20f
     canvas.drawLine(marginStart, y, marginEnd, y, paint)
     y += 20f
 
@@ -304,9 +370,9 @@ fun generateReceiptPdf(
             break
         }
 
-        val name = item.product.name ?: "Sin nombre"
+        val name = item.name.ifBlank { "Sin nombre" }
         val qty = item.quantity
-        val unitPrice = item.product.price ?: 0.0
+        val unitPrice = item.unitPrice
         val lineTotal = unitPrice * qty
 
         canvas.drawText(

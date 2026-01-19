@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,6 +29,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import java.util.Calendar
 import com.example.golden_rose_apk.repository.LocalUserRepository
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -84,6 +86,7 @@ fun RegisterScreen(navController: NavController) {
 
     val context = LocalContext.current
     val userRepository = remember { LocalUserRepository(context) }
+    val scope = rememberCoroutineScope()
 
 
     // Función para validar email
@@ -600,16 +603,18 @@ fun RegisterScreen(navController: NavController) {
                     isLoading = true
                     registrationError = null
 
-                    userRepository.registerUser(
-                        username = user,
-                        email = email,
-                        password = password
-                    ).onSuccess {
-                        isLoading = false
-                        showSuccessDialog = true
-                    }.onFailure { error ->
-                        isLoading = false
-                        registrationError = error.localizedMessage
+                    scope.launch {
+                        userRepository.registerUser(
+                            username = user,
+                            email = email,
+                            password = password
+                        ).onSuccess {
+                            isLoading = false
+                            showSuccessDialog = true
+                        }.onFailure { error ->
+                            isLoading = false
+                            registrationError = error.localizedMessage
+                        }
                     }
                 }
             ) {

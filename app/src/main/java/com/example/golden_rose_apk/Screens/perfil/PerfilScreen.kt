@@ -42,6 +42,7 @@ import com.example.golden_rose_apk.model.BottomNavItem
 import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import com.example.golden_rose_apk.repository.LocalUser
 import com.example.golden_rose_apk.repository.LocalUserRepository
 import java.io.File
 import java.io.FileOutputStream
@@ -60,6 +61,7 @@ fun PerfilScreen(
     val application = context.applicationContext as Application
     val authViewModel: AuthViewModel = viewModel(factory = AuthViewModelFactory(application))
     val userRepository = remember { LocalUserRepository(context) }
+    val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
 
     // Estado que viene del SettingsViewModel COMPARTIDO
     val username by settingsViewModel.username.collectAsState()
@@ -67,7 +69,10 @@ fun PerfilScreen(
     val currentTheme by settingsViewModel.appTheme.collectAsState()
     val pushNotificationsEnabled by settingsViewModel.pushNotificationsEnabled.collectAsState()
 
-    val currentUser = userRepository.getCurrentUser()
+    var currentUser by remember { mutableStateOf<LocalUser?>(null) }
+    LaunchedEffect(isLoggedIn) {
+        currentUser = if (isLoggedIn) userRepository.getCurrentUser() else null
+    }
     val email = currentUser?.email.orEmpty()
 
     // Nombre para mostrar: primero displayName, luego username guardado, luego parte del email
@@ -253,15 +258,52 @@ fun PerfilScreen(
                 Text("Editar Perfil")
             }
 
+            SettingItemDivider(title = "Cuenta")
+
+            if (isLoggedIn) {
+                Text(
+                    text = "Sesión iniciada como $displayName",
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+            } else {
+                Text(
+                    text = "Inicia sesión para ver tus compras y preferencias personalizadas.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    TextButton(onClick = { navController.navigate("login") }) {
+                        Text("Iniciar sesión")
+                    }
+                    TextButton(onClick = { navController.navigate("register") }) {
+                        Text("Crear cuenta")
+                    }
+                }
+            }
+
             SettingItemDivider(title = "Tus compras")
 
-            TextButton(
-                onClick = { navController.navigate("orderHistory") },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                Icon(Icons.Default.ShoppingBag, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text("Mis compras")
+            if (isLoggedIn) {
+                TextButton(
+                    onClick = { navController.navigate("orderHistory") },
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) {
+                    Icon(Icons.Default.ShoppingBag, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Mis compras")
+                }
+            } else {
+                Text(
+                    text = "Inicia sesión para ver tu historial de compras.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
             }
 
 
@@ -345,29 +387,30 @@ fun PerfilScreen(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Botón Cerrar Sesión
-            Button(
-                onClick = {
-                    Log.d("SettingsScreen", "Logout button clicked!")
-                    authViewModel.logout()
+            if (isLoggedIn) {
+                Button(
+                    onClick = {
+                        Log.d("SettingsScreen", "Logout button clicked!")
+                        authViewModel.logout()
 
-                    navController.navigate("login") {
-                        popUpTo(navController.graph.startDestinationId) {
-                            inclusive = true
+                        navController.navigate("login") {
+                            popUpTo(navController.graph.startDestinationId) {
+                                inclusive = true
+                            }
+                            launchSingleTop = true
                         }
-                        launchSingleTop = true
-                    }
-                },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.error
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp)
-            ) {
-                Icon(Icons.Filled.ExitToApp, contentDescription = null)
-                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                Text("Cerrar Sesión")
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                ) {
+                    Icon(Icons.Filled.ExitToApp, contentDescription = null)
+                    Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                    Text("Cerrar Sesión")
+                }
             }
         }
     }

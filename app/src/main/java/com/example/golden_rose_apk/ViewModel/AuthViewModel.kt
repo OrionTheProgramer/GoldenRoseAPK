@@ -33,11 +33,13 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun refreshSession() {
-        val currentUser = userRepository.getCurrentUser()
-        _isLoggedIn.value = currentUser != null
-        _userId.value = currentUser?.id
-        _username.value = currentUser?.username
-        _email.value = currentUser?.email
+        viewModelScope.launch {
+            val currentUser = userRepository.getCurrentUser()
+            _isLoggedIn.value = currentUser != null
+            _userId.value = currentUser?.id
+            _username.value = currentUser?.username
+            _email.value = currentUser?.email
+        }
     }
 
     fun login(user: LocalUser) {

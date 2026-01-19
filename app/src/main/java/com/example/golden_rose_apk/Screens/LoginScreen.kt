@@ -67,6 +67,7 @@ fun LoginScreen(navController: NavController) {
     val context = LocalContext.current
     val authViewModel: AuthViewModel = viewModel()
     val userRepository = remember { LocalUserRepository(context) }
+    val scope = rememberCoroutineScope()
 
     // Función para validar email
     fun isValidEmail(email: String): Boolean {
@@ -282,22 +283,24 @@ fun LoginScreen(navController: NavController) {
                     if (validateForm() && !loading) {
                         loading = true
 
-                        userRepository.login(email, password)
-                            .onSuccess { user ->
-                                authViewModel.login(user)
-                                Toast.makeText(context, "¡Bienvenido!", Toast.LENGTH_SHORT).show()
-                                navController.navigate("home") {
-                                    popUpTo("login") { inclusive = true }
+                        scope.launch {
+                            userRepository.login(email, password)
+                                .onSuccess { user ->
+                                    authViewModel.login(user)
+                                    Toast.makeText(context, "¡Bienvenido!", Toast.LENGTH_SHORT).show()
+                                    navController.navigate("home") {
+                                        popUpTo("login") { inclusive = true }
+                                    }
                                 }
-                            }
-                            .onFailure { error ->
-                                Toast.makeText(
-                                    context,
-                                    error.localizedMessage ?: "Error al iniciar sesión",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                            }
-                        loading = false
+                                .onFailure { error ->
+                                    Toast.makeText(
+                                        context,
+                                        error.localizedMessage ?: "Error al iniciar sesión",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            loading = false
+                        }
                     }
                 },
                 modifier = Modifier
