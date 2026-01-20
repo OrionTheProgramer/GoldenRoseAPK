@@ -7,8 +7,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -20,6 +24,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -80,39 +85,51 @@ fun CheckoutScreen(
             Text("Resumen del Pedido", style = MaterialTheme.typography.headlineSmall)
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Lista de items del carrito
-            LazyColumn(
-                modifier = Modifier.weight(1f)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
             ) {
-                items(cartItems) { item ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text("${item.product.name} (x${item.quantity})")
-                        Text(
-                            "$${((item.product.price ?: 0.0) * item.quantity).formatPrice()}"
-                        )
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    items(cartItems) { item ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 6.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("${item.product.name} (x${item.quantity})")
+                            Text(
+                                "$${((item.product.price ?: 0.0) * item.quantity).formatPrice()}",
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Divider()
-            SummaryRow("Subtotal:", subtotal)
-            SummaryRow("Envío:", shipping)
-            SummaryRow("Comisión:", commission)
-            Row(
+            Card(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
-                Text("Método de pago:")
-                Text(paymentMethod)
+                Column(modifier = Modifier.padding(16.dp)) {
+                    SummaryRow("Subtotal:", subtotal)
+                    SummaryRow("Envío:", shipping)
+                    SummaryRow("Comisión:", commission)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("Método de pago:")
+                        Text(paymentMethod, fontWeight = FontWeight.Medium)
+                    }
+                }
             }
-            Divider()
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -136,12 +153,15 @@ fun CheckoutScreen(
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 listOf("Tarjeta", "Transferencia", "Efectivo").forEach { method ->
-                    Button(
+                    FilterChip(
+                        selected = paymentMethod == method,
                         onClick = { paymentMethod = method },
-                        enabled = paymentMethod != method
-                    ) {
-                        Text(method)
-                    }
+                        label = { Text(method) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    )
                 }
             }
 
@@ -164,29 +184,31 @@ fun CheckoutScreen(
 
                         ordersViewModel.createOrderFromCart(cartItems) { order: Order? ->
                             if (order != null) {
-                                val items = cartItems.map {
-                                    ReceiptItem(
-                                        name = it.product.name,
-                                        quantity = it.quantity,
-                                        unitPrice = it.product.price
+                                scope.launch {
+                                    val items = cartItems.map {
+                                        ReceiptItem(
+                                            name = it.product.name,
+                                            quantity = it.quantity,
+                                            unitPrice = it.product.price
+                                        )
+                                    }
+                                    val receiptId = receiptRepository.createReceipt(
+                                        buyerName = currentUser.username,
+                                        buyerEmail = currentUser.email,
+                                        paymentMethod = paymentMethod,
+                                        items = items,
+                                        subtotal = subtotal,
+                                        shipping = shipping,
+                                        commission = commission,
+                                        total = total,
+                                        receiptId = order.id
                                     )
-                                }
-                                val receiptId = receiptRepository.createReceipt(
-                                    buyerName = currentUser.username,
-                                    buyerEmail = currentUser.email,
-                                    paymentMethod = paymentMethod,
-                                    items = items,
-                                    subtotal = subtotal,
-                                    shipping = shipping,
-                                    commission = commission,
-                                    total = total,
-                                    receiptId = order.id
-                                )
 
-                                // 2) Navegar a la boleta pasando el id
-                                navController.navigate("receipt/$receiptId") {
-                                    // sacamos la pantalla de carrito de la pila
-                                    popUpTo("cart") { inclusive = true }
+                                    // 2) Navegar a la boleta pasando el id
+                                    navController.navigate("receipt/$receiptId") {
+                                        // sacamos la pantalla de carrito de la pila
+                                        popUpTo("cart") { inclusive = true }
+                                    }
                                 }
                             } else {
                                 Toast.makeText(
