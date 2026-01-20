@@ -24,11 +24,20 @@ private val DarkColorScheme = darkColorScheme(
     outline = BorderColor
 )
 
-// Paleta clara de referencia; se puede ajustar mas adelante.
 private val LightColorScheme = lightColorScheme(
     primary = ValorantRed,
-    secondary = GoldenAccent,
+    secondary = Color(0xFF6D5DD3),
     tertiary = GoldenAccent,
+    background = Color(0xFFF5F6FA),
+    surface = Color(0xFFFFFFFF),
+    surfaceVariant = Color(0xFFE7ECF3),
+    onPrimary = Color.White,
+    onSecondary = Color.White,
+    onTertiary = Color(0xFF2D2A32),
+    onBackground = Color(0xFF0F1923),
+    onSurface = Color(0xFF1C1B1F),
+    onSurfaceVariant = Color(0xFF475569),
+    outline = Color(0xFFCDD5DF)
 )
 
 @Composable

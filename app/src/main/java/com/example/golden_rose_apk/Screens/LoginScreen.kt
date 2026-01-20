@@ -17,6 +17,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -124,7 +125,7 @@ fun LoginScreen(navController: NavController) {
                 }
             )
         },
-        modifier = Modifier.background(Color(0xFFE7F1F1))
+        modifier = Modifier.background(MaterialTheme.colorScheme.background)
     ) { innerPadding ->
 
         Column(
@@ -224,7 +225,7 @@ fun LoginScreen(navController: NavController) {
 
             Text(
                 "Recuperar contraseña",
-                color = Color(0xFF5649A5),
+                color = MaterialTheme.colorScheme.primary,
                 fontSize = 12.sp,
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
@@ -258,7 +259,7 @@ fun LoginScreen(navController: NavController) {
                     )
                     Text(
                         text = "términos y condiciones",
-                        color = Color(0xFF5649A5),
+                        color = MaterialTheme.colorScheme.primary,
                         fontSize = 14.sp,
                         modifier = Modifier.clickable {
                             // Navegar a términos y condiciones
@@ -290,7 +291,7 @@ fun LoginScreen(navController: NavController) {
                                 .onSuccess { user ->
                                     authViewModel.login(user)
                                     Toast.makeText(context, "¡Bienvenido!", Toast.LENGTH_SHORT).show()
-                                    navController.navigate("home") {
+                                    navController.navigate("loading") {
                                         popUpTo("login") { inclusive = true }
                                     }
                                 }
@@ -309,7 +310,7 @@ fun LoginScreen(navController: NavController) {
                     .width(200.dp)
                     .height(45.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF5649A5),
+                    containerColor = MaterialTheme.colorScheme.primary,
                     disabledContainerColor = Color(0xFF9E9E9E)
                 ),
                 shape = RoundedCornerShape(50),
@@ -334,12 +335,12 @@ fun LoginScreen(navController: NavController) {
                 Text(
                     text = "¿No tienes una cuenta? ",
                     fontSize = 14.sp,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
                     text = "Crear cuenta",
                     fontSize = 14.sp,
-                    color = Color(0xFF5649A5),
+                    color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.clickable {
                         navController.navigate("register")

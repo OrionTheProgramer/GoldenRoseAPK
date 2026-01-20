@@ -1,5 +1,6 @@
 package com.example.golden_rose_apk.Screens.search
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -135,8 +136,10 @@ fun SkinCard(
             AsyncImage(
                 model = product.image,
                 contentDescription = product.name,
-                modifier = Modifier.size(96.dp),
-                contentScale = ContentScale.Crop
+                modifier = Modifier
+                    .size(96.dp)
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                contentScale = ContentScale.Fit
             )
 
             Column(modifier = Modifier.weight(1f)) {

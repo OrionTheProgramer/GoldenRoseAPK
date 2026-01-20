@@ -56,10 +56,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun setTheme(theme: String) {
-        _appTheme.value = theme
-
-        // TODO: si quieres, aquí guardas en DataStore / SharedPreferences
-        // para que el tema persista aunque cierres la app.
+        setAppTheme(theme)
     }
 }
 
@@ -72,4 +69,3 @@ class SettingsViewModelFactory(private val application: Application) : ViewModel
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
-

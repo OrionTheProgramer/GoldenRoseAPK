@@ -15,4 +15,8 @@ object ValorantApi {
     fun weaponSkinImageUrl(skinId: String): String {
         return "${BASE_MEDIA}weaponskins/$skinId/displayicon.png"
     }
+
+    fun contentTierIconUrl(tierId: String): String {
+        return "${BASE_MEDIA}contenttiers/$tierId/displayicon.png"
+    }
 }

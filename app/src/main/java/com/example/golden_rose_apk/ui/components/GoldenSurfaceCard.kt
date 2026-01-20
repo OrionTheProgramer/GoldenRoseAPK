@@ -7,10 +7,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
@@ -31,9 +33,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.golden_rose_apk.ui.theme.DarkBackground
 import com.example.golden_rose_apk.ui.theme.DarkSurface
 import com.example.golden_rose_apk.ui.theme.GoldenAccent
@@ -116,19 +120,36 @@ fun PrimaryButton(
 }
 
 @Composable
-fun PillBadge(text: String, modifier: Modifier = Modifier) {
+fun PillBadge(
+    text: String,
+    modifier: Modifier = Modifier,
+    iconUrl: String? = null
+) {
     Surface(
         modifier = modifier,
         shape = MaterialTheme.shapes.large,
         color = GoldenAccent.copy(alpha = 0.16f),
         border = ButtonDefaults.outlinedButtonBorder
     ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
-            color = GoldenAccent,
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-        )
+        ) {
+            if (iconUrl != null) {
+                AsyncImage(
+                    model = iconUrl,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                    contentScale = ContentScale.Fit
+                )
+                Spacer(modifier = Modifier.size(6.dp))
+            }
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+                color = GoldenAccent
+            )
+        }
     }
 }
 

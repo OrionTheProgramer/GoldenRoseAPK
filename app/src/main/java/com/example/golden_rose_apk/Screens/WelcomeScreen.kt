@@ -52,7 +52,7 @@ fun WelcomeScreen(navController: NavController? = null) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFE7F1F1)),
+            .background(MaterialTheme.colorScheme.background),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
@@ -104,10 +104,10 @@ fun WelcomeScreen(navController: NavController? = null) {
             modifier = Modifier
                 .width(200.dp)
                 .height(45.dp),
-            colors = ButtonDefaults.buttonColors(Color(0xFF5649A5)),
+            colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary),
             shape = RoundedCornerShape(50)
         ) {
-            Text("Iniciar Sesión", color = Color.White)
+            Text("Iniciar Sesión", color = MaterialTheme.colorScheme.onPrimary)
         }
 
         // Espaciado
@@ -119,10 +119,10 @@ fun WelcomeScreen(navController: NavController? = null) {
             modifier = Modifier
                 .width(200.dp)
                 .height(45.dp),
-            colors = ButtonDefaults.buttonColors(Color(0xFF5649A5)),
+            colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary),
             shape = RoundedCornerShape(50)
         ) {
-            Text("Crear cuenta", color = Color.White)
+            Text("Crear cuenta", color = MaterialTheme.colorScheme.onPrimary)
         }
 
         // Espaciado

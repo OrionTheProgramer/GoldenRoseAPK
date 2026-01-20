@@ -232,7 +232,7 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 items(categories) { category ->
-                    CategoryCard(category = category)
+                    CategoryCard(category = category, navController = navController)
                 }
             }
 
@@ -319,13 +319,16 @@ fun HomeScreen(
 
 // Componente de tarjeta de categoría
 @Composable
-fun CategoryCard(category: Category) {
+fun CategoryCard(
+    category: Category,
+    navController: NavController
+) {
     val colorScheme = MaterialTheme.colorScheme
 
     Card(
         modifier = Modifier
             .size(120.dp)
-            .clickable { /* Navegar a categoría */ },
+            .clickable { navController.navigate("categories") },
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
             containerColor = colorScheme.surfaceVariant
@@ -394,8 +397,9 @@ fun ProductCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(120.dp)
-                    .clip(RoundedCornerShape(12.dp)),
-                contentScale = ContentScale.Crop
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(colorScheme.surfaceVariant),
+                contentScale = ContentScale.Fit
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -556,8 +560,9 @@ fun ProductCardFromSkin(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(120.dp)
-                    .clip(RoundedCornerShape(12.dp)),
-                contentScale = ContentScale.Crop
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(colorScheme.surfaceVariant),
+                contentScale = ContentScale.Fit
             )
 
             Spacer(modifier = Modifier.height(8.dp))

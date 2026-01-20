@@ -25,6 +25,10 @@ class UtilsExtensionsTest {
         val deluxe = getTierInfoFromLabel("Deluxe")
         assertEquals("Deluxe", deluxe.name)
         assertEquals(androidx.compose.ui.graphics.Color(0xFF2196F3), deluxe.color)
+        assertEquals(
+            "https://media.valorant-api.com/contenttiers/0cebb8be-46d7-c12a-d306-e9907bfc5a25/displayicon.png",
+            deluxe.iconUrl
+        )
     }
 
     @Test
@@ -32,5 +36,6 @@ class UtilsExtensionsTest {
         val unknown = getTierInfoFromLabel("misterio")
         assertEquals("Desconocido", unknown.name)
         assertEquals(androidx.compose.ui.graphics.Color.Gray, unknown.color)
+        assertEquals(null, unknown.iconUrl)
     }
 }

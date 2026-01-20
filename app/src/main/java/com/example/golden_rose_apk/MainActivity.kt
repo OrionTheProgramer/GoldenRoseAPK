@@ -6,9 +6,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.core.app.ActivityCompat
@@ -19,6 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.golden_rose_apk.Screens.blogs.BlogScreen
 import com.example.golden_rose_apk.Screens.categories.CategoriesScreen
 import com.example.golden_rose_apk.Screens.HomeScreen
+import com.example.golden_rose_apk.Screens.LoadingScreen
 import com.example.golden_rose_apk.Screens.LoginScreen
 import com.example.golden_rose_apk.Screens.perfil.PerfilScreen
 import com.example.golden_rose_apk.Screens.RegisterScreen
@@ -43,6 +41,7 @@ import com.example.golden_rose_apk.ViewModel.ProductsViewModel
 import com.example.golden_rose_apk.ViewModel.SettingsViewModel
 import com.example.golden_rose_apk.ViewModel.SettingsViewModelFactory
 import com.example.golden_rose_apk.ViewModel.UserViewModel
+import com.example.golden_rose_apk.ui.theme.GoldenRoseTheme
 
 
 class MainActivity : ComponentActivity() {
@@ -73,8 +72,8 @@ class MainActivity : ComponentActivity() {
 
             // Si ya hay usuario, entra directo a "home"
             val startDestination = if (isLoggedIn) "home" else "welcome"
-            MaterialTheme(
-                colorScheme = if (isDark) darkColorScheme() else lightColorScheme()
+            GoldenRoseTheme(
+                darkTheme = isDark
             ) {
                 val cartViewModel: CartViewModel = viewModel()
                 val navController = rememberNavController()
@@ -86,6 +85,9 @@ class MainActivity : ComponentActivity() {
                 ) {
                     composable("welcome") { WelcomeScreen(navController) }
                     composable("login") { LoginScreen(navController) }
+                    composable("loading") {
+                        LoadingScreen(navController = navController)
+                    }
                     composable("register") { RegisterScreen(navController) }
 
                     // Pantalla principal con parámetro opcional
